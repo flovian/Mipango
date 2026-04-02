@@ -13,64 +13,59 @@ import (
 func main() {
 	objRepo := repository.NewObjectiveRepo()
 	taskRepo := services.NewTaskRepo()
-	objService := services.NewObjectiveService(objRepo, taskRepo)
+	service := services.NewObjectiveService(objRepo, taskRepo)
 
 	tmplIndex := template.Must(template.ParseFiles("templates/index.html"))
 	tmplObjectives := template.Must(template.ParseFiles("templates/objectives.html"))
 	tmplTasks := template.Must(template.ParseFiles("templates/tasks.html"))
 
-	// Home page
+	// Home
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		tmplIndex.Execute(w, nil)
 	})
 
-	// Objectives page
+	// Objectives
 	http.HandleFunc("/objectives", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			objectives := objService.GetAllObjectives()
-			tmplObjectives.Execute(w, objectives)
+			tmplObjectives.Execute(w, service.GetAllObjectives())
 			return
 		}
-
 		if r.Method == http.MethodPost {
 			title := r.FormValue("title")
 			deadline := r.FormValue("deadline")
-			priorityStr := r.FormValue("priority")
-			priority, _ := strconv.Atoi(priorityStr)
-			objService.CreateObjective(title, deadline, priority)
+			priority, _ := strconv.Atoi(r.FormValue("priority"))
+			service.CreateObjective(title, deadline, priority)
 			http.Redirect(w, r, "/objectives", http.StatusSeeOther)
 		}
 	})
 
-	// Tasks page
+	// Tasks
 	http.HandleFunc("/tasks", func(w http.ResponseWriter, r *http.Request) {
-		objectiveID := r.FormValue("objective_id")
+		objID := r.FormValue("objective_id")
 		if r.Method == http.MethodGet {
-			objectives := objService.GetAllObjectives()
-			var currentObj *services.ObjectiveService
-			for _, obj := range objectives {
-				if obj.ID == objectiveID {
-					currentObj = &services.ObjectiveService{}
+			// Find objective
+			var obj interface{}
+			for _, o := range service.GetAllObjectives() {
+				if o.ID == objID {
+					obj = o
 				}
 			}
 			data := struct {
 				Objective interface{}
-				Tasks     interface{}
+				Tasks     []*services.TaskRepo
 			}{
-				Objective: objService.GetAllObjectives(), // For simplicity, you can map properly
-				Tasks:     objService.GetTasks(objectiveID),
+				Objective: obj,
+				Tasks:     service.GetTasks(objID),
 			}
 			tmplTasks.Execute(w, data)
 			return
 		}
-
 		if r.Method == http.MethodPost {
 			title := r.FormValue("title")
 			deadline := r.FormValue("deadline")
-			priorityStr := r.FormValue("priority")
-			priority, _ := strconv.Atoi(priorityStr)
-			objService.CreateTask(title, objectiveID, priority, deadline)
-			http.Redirect(w, r, "/tasks?objective_id="+objectiveID, http.StatusSeeOther)
+			priority, _ := strconv.Atoi(r.FormValue("priority"))
+			service.CreateTask(title, objID, priority, deadline)
+			http.Redirect(w, r, "/tasks?objective_id="+objID, http.StatusSeeOther)
 		}
 	})
 

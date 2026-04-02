@@ -6,39 +6,37 @@ import (
 	"mipango/internal/repository"
 )
 
-// -- ObjectiveService--
 type ObjectiveService struct {
-	repo     *repository.ObjectiveRepo
+	objRepo  *repository.ObjectiveRepo
 	taskRepo *TaskRepo
 }
 
-// ---------------- Constructor ----------------
-func NewObjectiveService(repo *repository.ObjectiveRepo, taskRepo *TaskRepo) *ObjectiveService {
+func NewObjectiveService(objRepo *repository.ObjectiveRepo, taskRepo *TaskRepo) *ObjectiveService {
 	return &ObjectiveService{
-		repo:     repo,
+		objRepo:  objRepo,
 		taskRepo: taskRepo,
 	}
 }
 
-// ---------------- Objective Methods ----------------
-func (s *ObjectiveService) CreateObjective(title string, deadline string, priority int) models.Objective {
+// Objective methods
+func (s *ObjectiveService) CreateObjective(title, deadline string, priority int) models.Objective {
 	id := uuid.New().String()
 	obj := models.Objective{
 		ID:        id,
 		Title:     title,
 		Priority:  priority,
+		Deadline:  deadline,
 		Completed: false,
-		Deadline:  deadline, // You can later parse it to time.Time if needed
 	}
-	s.repo.Save(obj)
+	s.objRepo.Save(obj)
 	return obj
 }
 
 func (s *ObjectiveService) GetAllObjectives() []models.Objective {
-	return s.repo.GetAll()
+	return s.objRepo.GetAll()
 }
 
-// ---------------- Task Methods ----------------
+// Task methods
 func (s *ObjectiveService) CreateTask(title, objectiveID string, priority int, deadline string) *models.Task {
 	return s.taskRepo.CreateTask(title, objectiveID, priority, deadline)
 }
