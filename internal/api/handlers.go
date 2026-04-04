@@ -1,75 +1,81 @@
 package api
 
 import (
-	"encoding/json"
+	"html/template"
 	"net/http"
+	"strconv"
 
 	"mipango/internal/services"
 )
 
 type Handler struct {
 	ObjectiveService *services.ObjectiveService
+	Templates        *template.Template
 }
 
-// GET /objectives
-func (h *Handler) GetObjectives(w http.ResponseWriter, r *http.Request) {
-	objs := h.ObjectiveService.GetAllObjectives()
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(objs)
-}
-
-// Request body struct
-type CreateObjectiveRequest struct {
-	Title    string `json:"title"`
-	Deadline string `json:"deadline"`
-	Priority int    `json:"priority"`
-}
-
-// POST /objectives
-func (h *Handler) CreateObjective(w http.ResponseWriter, r *http.Request) {
-	var req CreateObjectiveRequest
-
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+func (h *Handler) HandleHome(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
 		return
 	}
-
-	obj := h.ObjectiveService.CreateObjective(req.Title, req.Deadline, req.Priority)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(obj)
-}
-// ----------------- TASK HANDLERS -----------------
-
-type CreateTaskRequest struct {
-	Title       string `json:"title"`
-	ObjectiveID string `json:"objective_id"`
-	Priority    int    `json:"priority"`
-	Deadline    string `json:"deadline"`
+	objs, _ := h.ObjectiveService.GetAllObjectives()
+	suggestion, _ := h.ObjectiveService.GetSmartSuggestion()
+	data := map[string]interface{}{
+		"Objectives": objs,
+		"Suggestion": suggestion,
+	}
+	h.Templates.ExecuteTemplate(w, "index.html", data)
 }
 
-// POST /tasks
-func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
-	var req CreateTaskRequest
-
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+func (h *Handler) HandleObjectives(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		objs, _ := h.ObjectiveService.GetAllObjectives()
+		h.Templates.ExecuteTemplate(w, "objective.html", objs)
 		return
 	}
-
-	task := h.ObjectiveService.CreateTask(req.Title, req.ObjectiveID, req.Priority, req.Deadline)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(task)
+	if r.Method == http.MethodPost {
+		title := r.FormValue("title")
+		deadline := r.FormValue("deadline")
+		priority, _ := strconv.Atoi(r.FormValue("priority"))
+		h.ObjectiveService.CreateObjective(title, deadline, priority)
+		http.Redirect(w, r, "/objectives", http.StatusSeeOther)
+	}
 }
 
-// GET /tasks?objective_id=<id>
-func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleTasks(w http.ResponseWriter, r *http.Request) {
 	objID := r.URL.Query().Get("objective_id")
-	tasks := h.ObjectiveService.GetTasks(objID)
+	if r.Method == http.MethodGet {
+		tasks, _ := h.ObjectiveService.GetTasks(objID)
+		objs, _ := h.ObjectiveService.GetAllObjectives()
+		var currentObj interface{}
+		for _, o := range objs {
+			if o.ID == objID {
+				currentObj = o
+				break
+			}
+		}
+		data := map[string]interface{}{
+			"Objective": currentObj,
+			"Tasks":     tasks,
+		}
+		h.Templates.ExecuteTemplate(w, "tasks.html", data)
+		return
+	}
+	if r.Method == http.MethodPost {
+		title := r.FormValue("title")
+		deadline := r.FormValue("deadline")
+		priority, _ := strconv.Atoi(r.FormValue("priority"))
+		h.ObjectiveService.CreateTask(title, objID, priority, deadline)
+		http.Redirect(w, r, "/tasks?objective_id="+objID, http.StatusSeeOther)
+	}
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tasks)
+func (h *Handler) HandleTaskComplete(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		taskID := r.FormValue("task_id")
+		objID := r.FormValue("objective_id")
+		completed := r.FormValue("completed") == "on"
+		h.ObjectiveService.UpdateTaskCompletion(taskID, completed)
+		http.Redirect(w, r, "/tasks?objective_id="+objID, http.StatusSeeOther)
+	}
 }
