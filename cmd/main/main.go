@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"mipango/internal/api"
 	"mipango/internal/repository"
@@ -39,11 +40,11 @@ func main() {
 	mux := api.NewRoutes(handler)
 	http.Handle("/", mux)
 
-	port := ""
+	port := os.Getenv("PORT")
 
-	if port==""{
-		port=":8080"
+	if port == "" {
+		port = "8080"
 	}
-	log.Println("Mipango server running on http://localhost" + port)
-	log.Fatal(http.ListenAndServe(port, nil))
+	log.Println("Mipango server running on http://localhost:" + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
