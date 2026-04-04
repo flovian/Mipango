@@ -6,4 +6,5 @@ type Objective struct {
 	Priority  int    `json:"priority"`
 	Completed bool   `json:"completed"`
 	Deadline  string `json:"deadline"` // store as string for simplicity
+	Progress  int    `json:"progress"`
 }
