@@ -1,31 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Tasks - Mipango</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Tasks for Objective: {{.Objective.Title}}</h1>
-    <ul>
-      {{range .Tasks}}
-        <li class="{{if .Completed}}completed{{end}}">
-          {{.Title}} - Priority: {{.Priority}} - Completed: {{.Completed}}
-        </li>
-      {{end}}
-    </ul>
+{{define "tasks.html"}}
+{{template "header" .}}
 
-    <h2>Create New Task</h2>
+<div class="breadcrumb">
+  <a href="/objectives">← Back to Objectives</a>
+</div>
+
+{{if .Objective}}
+<div class="objective-header fade-in">
+  <h2>{{.Objective.Title}}</h2>
+  <div class="meta" style="margin-top: 0.5rem">
+    <span class="badge priority-new">Priority {{.Objective.Priority}}</span>
+    <span style="color:var(--text-muted); margin-left:1rem; font-size:0.9rem;">Deadline: {{.Objective.Deadline}}</span>
+  </div>
+</div>
+
+<div class="grid-layout fade-in" style="animation-delay: 0.1s">
+  <div class="tasks-list glass-panel">
+    <h3 style="margin-bottom: 1rem;">Tasks</h3>
+    {{if not .Tasks}}
+    <div class="empty-state" style="padding: 2rem; width: 100%;">No tasks yet. Create one!</div>
+    {{end}}
+
+    {{range .Tasks}}
+    <div class="task-row {{if .Completed}}task-completed{{end}}">
+      <form action="/tasks/complete" method="POST" class="checkbox-form">
+        <input type="hidden" name="task_id" value="{{.ID}}">
+        <input type="hidden" name="objective_id" value="{{.Objective}}">
+        <input type="checkbox" name="completed" {{if .Completed}}checked{{end}} onchange="this.form.submit()">
+      </form>
+      <div class="task-info">
+        <h4>{{.Title}}</h4>
+        <div class="task-meta">
+          <span class="priority-{{.Priority}}">Priority {{.Priority}}</span>
+          <span class="deadline">Due: {{.Deadline}}</span>
+        </div>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="task-creation glass-panel">
+    <h3 style="margin-bottom: 1rem;">Add Task</h3>
     <form method="POST" action="/tasks">
       <input type="hidden" name="objective_id" value="{{.Objective.ID}}">
-      <input name="title" placeholder="Task Title" required>
-      <input name="deadline" placeholder="Deadline YYYY-MM-DD">
-      <input name="priority" type="number" min="1" max="5" value="3">
-      <button type="submit">Create Task</button>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" placeholder="New Task..." required>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="date" name="deadline" required>
+      </div>
+      <div class="form-group">
+        <label>Priority (1-5)</label>
+        <input type="number" name="priority" min="1" max="5" value="3" required>
+      </div>
+      <button type="submit" class="btn-primary w-100">Add Task</button>
     </form>
-
-    <a href="/objectives" class="link">Back to Objectives</a>
   </div>
-</body>
-</html>
+</div>
+{{else}}
+<div class="empty-state">Objective not found. <a href="/objectives">Go back</a></div>
+{{end}}
+
+{{template "footer" .}}
+{{end}}

@@ -1,31 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Objectives - Mipango</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Objectives</h1>
-    <ul>
-      {{range .}}
-        <li>
-          {{.Title}} - Priority: {{.Priority}}
-          <a href="/tasks?objective_id={{.ID}}">View Tasks</a>
-        </li>
-      {{end}}
-    </ul>
+{{define "objective.html"}}
+{{template "header" .}}
 
-    <h2>Create New Objective</h2>
-    <form method="POST" action="/objectives">
-      <input name="title" placeholder="Title" required>
-      <input name="deadline" placeholder="Deadline YYYY-MM-DD">
-      <input name="priority" type="number" min="1" max="5" value="3">
-      <button type="submit">Create</button>
+<div class="header-action fade-in">
+  <h2>Manage Objectives</h2>
+  <button id="newObjectiveBtn" class="btn-primary">+ New Objective</button>
+</div>
+
+<div id="newObjectiveModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Create New Objective</h3>
+    <form method="POST" action="/objectives" class="creation-form">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" name="title" placeholder="E.g., Learn Go" required>
+      </div>
+      <div class="form-group">
+        <label>Deadline</label>
+        <input type="date" name="deadline" required>
+      </div>
+      <div class="form-group">
+        <label>Priority (1-5)</label>
+        <input type="number" name="priority" min="1" max="5" value="3" required>
+      </div>
+      <button type="submit" class="btn-primary w-100">Create</button>
     </form>
-
-    <a href="/" class="link">Back Home</a>
   </div>
-</body>
-</html>
+</div>
+
+<div class="grid list-grid fade-in" style="animation-delay: 0.1s">
+  {{range .}}
+  <div class="objective-card" onclick="window.location.href='/tasks?objective_id={{.ID}}'" style="cursor:pointer;">
+    <div class="header-action" style="margin-bottom: 0.5rem">
+      <h3>{{.Title}}</h3>
+      <span class="badge priority-new" style="margin:0;">P{{.Priority}}</span>
+    </div>
+    <p class="deadline" style="color:var(--text-muted); font-size:0.9rem;">Deadline: {{.Deadline}}</p>
+    <div class="progress-bar-bg">
+      <div class="progress-bar" style="width: {{.Progress}}%"></div>
+    </div>
+    <p class="progress-text">{{.Progress}}% completed</p>
+  </div>
+  {{end}}
+  {{if not .}}
+  <div class="empty-state" style="grid-column: 1 / -1">
+    <h3>No Objectives yet</h3>
+    <p>Click "+ New Objective" to start achieving your goals.</p>
+  </div>
+  {{end}}
+</div>
+
+{{template "footer" .}}
+{{end}}

@@ -1,14 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Mipango</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Welcome to Mipango</h1>
-    <a class="btn" href="/objectives">View Objectives</a>
+{{define "index.html"}}
+{{template "header" .}}
+
+<div class="hero">
+  <h1>Your Productivity OS</h1>
+  <p>Focus on what truly matters. We turn your objectives into clear actionable plans.</p>
+</div>
+
+{{if .Suggestion}}
+<section class="smart-suggestion fade-in" id="suggestion-card">
+  <div class="suggestion-header">
+    <span class="badge priority-new">⭐ Smart Suggestion</span>
+    <h3>What you should do next</h3>
   </div>
-</body>
-</html>
+  <div class="task-card">
+    <h4>{{.Suggestion.Title}}</h4>
+    <div class="task-meta">
+      <span class="priority-{{.Suggestion.Priority}}">Priority: {{.Suggestion.Priority}}</span>
+      <span class="deadline">Deadline: {{.Suggestion.Deadline}}</span>
+    </div>
+    <a href="/tasks?objective_id={{.Suggestion.Objective}}" class="btn-primary btn-sm">Take Action</a>
+  </div>
+</section>
+{{else}}
+<section class="smart-suggestion empty fade-in">
+  <h3>No pending tasks! 🎉</h3>
+  <p>You're all caught up. Start a new objective or take a break.</p>
+</section>
+{{end}}
+
+<section class="objectives-list fade-in" style="animation-delay: 0.1s">
+  <div class="section-heading">
+    <h2>Your Objectives</h2>
+    <a href="/objectives" class="btn-secondary">Manage All</a>
+  </div>
+  <div class="grid">
+    {{range .Objectives}}
+    <div class="objective-card" onclick="window.location.href='/tasks?objective_id={{.ID}}'" style="cursor:pointer;">
+      <h3>{{.Title}}</h3>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" style="width: {{.Progress}}%"></div>
+      </div>
+      <p class="progress-text">{{.Progress}}% done</p>
+    </div>
+    {{end}}
+    {{if not .Objectives}}
+    <div class="empty-state">
+      <p>No objectives found. Start by creating one!</p>
+      <a href="/objectives" class="btn-primary">Create Objective</a>
+    </div>
+    {{end}}
+  </div>
+</section>
+
+{{template "footer" .}}
+{{end}}
