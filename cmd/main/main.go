@@ -39,7 +39,11 @@ func main() {
 	mux := api.NewRoutes(handler)
 	http.Handle("/", mux)
 
-	port := ":8080"
+	port := ""
+
+	if port==""{
+		port=":8080"
+	}
 	log.Println("Mipango server running on http://localhost" + port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
