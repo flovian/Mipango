@@ -3,6 +3,8 @@ package services
 import (
 	"mipango/internal/models"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type TaskRepo struct {
@@ -19,7 +21,7 @@ func NewTaskRepo() *TaskRepo {
 func (r *TaskRepo) CreateTask(title, objectiveID string, priority int, deadline string) *models.Task {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	id := generateID() // function below
+	id := uuid.New().String()
 	task := &models.Task{
 		ID:        id,
 		Title:     title,
@@ -42,11 +44,4 @@ func (r *TaskRepo) GetTasksByObjective(objectiveID string) []*models.Task {
 		}
 	}
 	return list
-}
-
-// Simple ID generator
-import "github.com/google/uuid"
-
-func generateID() string {
-	return uuid.New().String()
 }

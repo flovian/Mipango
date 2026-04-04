@@ -5,5 +5,5 @@ type Objective struct {
 	Title     string `json:"title"`
 	Priority  int    `json:"priority"`
 	Completed bool   `json:"completed"`
-	Deadline  string `json:"deadline"` // keep as string for simplicity
+	Deadline  string `json:"deadline"` // store as string for simplicity
 }

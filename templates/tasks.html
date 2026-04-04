@@ -1,20 +1,31 @@
 <!DOCTYPE html>
-<html>
-<head><title>Objectives</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasks - Mipango</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<h1>Objectives</h1>
-<ul>
-{{range .}}
-<li>{{.Title}} - Priority: {{.Priority}} <a href="/tasks?objective_id={{.ID}}">View Tasks</a></li>
-{{end}}
-</ul>
-<h2>Create New Objective</h2>
-<form method="POST" action="/objectives">
-<input name="title" placeholder="Title" required>
-<input name="deadline" placeholder="Deadline YYYY-MM-DD">
-<input name="priority" type="number" min="1" max="5" value="3">
-<button type="submit">Create</button>
-</form>
-<a href="/">Back</a>
+  <div class="container">
+    <h1>Tasks for Objective: {{.Objective.Title}}</h1>
+    <ul>
+      {{range .Tasks}}
+        <li class="{{if .Completed}}completed{{end}}">
+          {{.Title}} - Priority: {{.Priority}} - Completed: {{.Completed}}
+        </li>
+      {{end}}
+    </ul>
+
+    <h2>Create New Task</h2>
+    <form method="POST" action="/tasks">
+      <input type="hidden" name="objective_id" value="{{.Objective.ID}}">
+      <input name="title" placeholder="Task Title" required>
+      <input name="deadline" placeholder="Deadline YYYY-MM-DD">
+      <input name="priority" type="number" min="1" max="5" value="3">
+      <button type="submit">Create Task</button>
+    </form>
+
+    <a href="/objectives" class="link">Back to Objectives</a>
+  </div>
 </body>
 </html>

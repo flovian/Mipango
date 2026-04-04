@@ -1,25 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Objectives - Mipango</title>
+  <meta charset="UTF-8">
+  <title>Objectives - Mipango</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
     <h1>Objectives</h1>
     <ul>
-    {{range .}}
+      {{range .}}
         <li>
-            {{.Title}} - Priority: {{.Priority}} 
-            <a href="/tasks?objective_id={{.ID}}">View Tasks</a>
+          {{.Title}} - Priority: {{.Priority}}
+          <a href="/tasks?objective_id={{.ID}}">View Tasks</a>
         </li>
-    {{end}}
+      {{end}}
     </ul>
+
     <h2>Create New Objective</h2>
     <form method="POST" action="/objectives">
-        <input name="title" placeholder="Title" required>
-        <input name="deadline" placeholder="Deadline YYYY-MM-DD">
-        <input name="priority" type="number" min="1" max="5" value="3">
-        <button type="submit">Create</button>
+      <input name="title" placeholder="Title" required>
+      <input name="deadline" placeholder="Deadline YYYY-MM-DD">
+      <input name="priority" type="number" min="1" max="5" value="3">
+      <button type="submit">Create</button>
     </form>
-    <a href="/">Back</a>
+
+    <a href="/" class="link">Back Home</a>
+  </div>
 </body>
 </html>

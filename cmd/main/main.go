@@ -70,6 +70,6 @@ func main() {
 	})
 
 	port := ":8080"
-	log.Println("🚀 Mipango server running on port", port)
+	log.Println("Mipango server running on port", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
